@@ -1,27 +1,36 @@
-// Function to update the city display in the UI
-function updateCityDisplay(cityName) {
-    const cityDisplay = document.getElementById('city-display');
-    if (cityDisplay) {
-        cityDisplay.innerText = cityName;
-    }
-}
+const searchInput = document.getElementById('city-search');
+const resultsList = document.getElementById('results');
+const cityDisplay = document.getElementById('city-display');
 
-// Update your existing event listener
-document.getElementById('city-search').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        const city = e.target.value;
-        localStorage.setItem('lastCity', city);
-        
-        // Update the UI immediately
-        updateCityDisplay(city);
-        alert('City saved: ' + city);
-    }
-});
-
-// Restore on page load
+// Load saved city on startup
 window.addEventListener('load', () => {
-    const savedCity = localStorage.getItem('lastCity');
-    if (savedCity) {
-        updateCityDisplay(savedCity);
+    const saved = localStorage.getItem('lastCity');
+    if (saved) cityDisplay.innerText = saved;
+});
+
+// Autocomplete Logic
+searchInput.addEventListener('input', async (e) => {
+    const query = e.target.value;
+    if (query.length < 2) { resultsList.innerHTML = ''; return; }
+
+    const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${query}&count=5`);
+    const data = await res.json();
+    
+    resultsList.innerHTML = '';
+    if (data.results) {
+        data.results.forEach(city => {
+            const li = document.createElement('li');
+            li.className = 'result-item';
+            li.innerText = `${city.name}, ${city.country}`;
+            li.onclick = () => saveCity(city.name);
+            resultsList.appendChild(li);
+        });
     }
 });
+
+function saveCity(name) {
+    localStorage.setItem('lastCity', name);
+    cityDisplay.innerText = name;
+    resultsList.innerHTML = '';
+    searchInput.value = '';
+}
