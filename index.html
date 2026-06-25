@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liquid Glass Weather</title>
+    <style>
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+        }
+        
+        body {
+            margin: 0;
+            height: 100vh;
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364); /* Deep weather background */
+            font-family: system-ui, -apple-system, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            overflow: hidden;
+        }
+
+        .glass-card {
+            background: var(--glass-bg);
+            /* The Liquid Glass Effect */
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2.5rem;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            /* Force GPU acceleration for smooth haptic animations */
+            transform: translateZ(0); 
+            will-change: transform;
+            transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        /* Haptic tap simulation */
+        .glass-card:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body>
+    <div class="glass-card" id="weather-container">
+        <h2 id="temperature">--°C</h2>
+        <p id="status-text">Initializing mesh network & local storage...</p>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
