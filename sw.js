@@ -1,54 +1,37 @@
-const ASSET_CACHE_CACHE_NAME = 'liquid-glass-weather-v1';
-const ASSETS_TO_CACHE = [
+const CRITICAL_CACHE_IDENTITY = 'aether-weather-v1';
+const HARD_MANIFEST = [
     './',
     './index.html',
     './app.js',
     './sw.js'
 ];
 
-self.addEventListener('install', (event) => {
-    event.waitUntil(
-        caches.open(ASSET_CACHE_CACHE_NAME).then((cache) => {
-            return cache.addAll(ASSETS_TO_CACHE);
-        })
+self.addEventListener('install', (e) => {
+    e.waitUntil(
+        caches.open(CRITICAL_CACHE_IDENTITY).then((c) => c.addAll(HARD_MANIFEST))
     );
     self.skipWaiting();
 });
 
-self.addEventListener('activate', (event) => {
-    event.waitUntil(
-        caches.keys().then((keys) => {
-            return Promise.all(
-                keys.map((key) => {
-                    if (key !== ASSET_CACHE_CACHE_NAME) {
-                        return caches.delete(key);
-                    }
-                })
-            );
-        })
+self.addEventListener('activate', (e) => {
+    e.waitUntil(
+        caches.keys().then((ks) => Promise.all(ks.map((k) => {
+            if (k !== CRITICAL_CACHE_IDENTITY) return caches.delete(k);
+        })))
     );
     self.clients.claim();
 });
 
-self.addEventListener('fetch', (event) => {
-    // Intercept requests for static structural layou
-    event.respondWith(
-        caches.match(event.request).then((cachedResponse) => {
-            if (cachedResponse) {
-                return cachedResponse;
-            }
-            return fetch(event.request).then((networkResponse) => {
-                if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
-                    return networkResponse;
-                }
-                const cacheCopy = networkResponse.clone();
-                caches.open(ASSET_CACHE_CACHE_NAME).then((cache) => {
-                    cache.put(event.request, cacheCopy);
-                });
-                return networkResponse;
+self.addEventListener('fetch', (e) => {
+    e.respondWith(
+        caches.match(e.request).then((cached) => {
+            if (cached) return cached;
+            return fetch(e.request).then((res) => {
+                if(!res || res.status !== 200 || res.type !== 'basic') return res;
+                const activeDuplicate = res.clone();
+                caches.open(CRITICAL_CACHE_IDENTITY).then((c) => c.put(e.request, activeDuplicate));
+                return res;
             });
         })
     );
-    /
 });
-//
