@@ -3,196 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AETHER // Liquid Glass Weather OS</title>
+    <title>Weather App</title>
     <style>
         :root {
-            --blur-intensity: 25px;
-            --glass-bg: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(255, 255, 255, 0.12);
-            --glow-color: rgba(0, 198, 255, 0.3);
-            --text-primary: #ffffff;
-            --text-secondary: rgba(255, 255, 255, 0.65);
+            --bg-color: #ffffff;
+            --text-color: #000000;
+            --transition-speed: 0.8s;
         }
-
-        body {
-            margin: 0;
-            padding: 15px;
-            min-height: 100vh;
-            background: #090f1c;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: var(--text-primary);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            overflow-x: hidden;
-            box-sizing: border-box;
-        }
-
-        /* Ambient Fluid Background Vectors */
-        .fluid-bg {
-            position: absolute;
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, var(--glow-color) 0%, rgba(0,0,0,0) 70%);
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: -1;
-            transition: background 1s ease;
-        }
-
-        /* The Main Liquid Glass Chassis */
-        .glass-chassis {
-            background: var(--glass-bg);
-            backdrop-filter: blur(var(--blur-intensity)) saturate(200%);
-            -webkit-backdrop-filter: blur(var(--blur-intensity)) saturate(200%);
-            border: 1px solid var(--glass-border);
-            border-radius: 36px;
-            padding: 24px;
-            width: 100%;
-            max-width: 460px;
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255,255,255,0.1);
-            transform: translateZ(0);
-            transition: border 0.5s ease, box-shadow 0.5s ease;
-        }
-
-        /* Search Interface */
-        .search-row {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-        .search-row input {
-            flex: 1;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: 16px;
-            color: #fff;
-            font-size: 1rem;
-            outline: none;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .search-row input:focus {
-            border-color: rgba(255,255,255,0.4);
-            background: rgba(0, 0, 0, 0.4);
-        }
-        .search-row button {
-            background: rgba(255, 255, 255, 0.12);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: 0 24px;
-            color: #fff;
-            font-weight: 600;
-            cursor: pointer;
-            backdrop-filter: blur(5px);
-            transition: all 0.2s;
-        }
-        .search-row button:active { transform: scale(0.95); }
-
-        /* Core Smart Warning Layer */
-        .analyst-banner {
-            background: rgba(255, 255, 255, 0.05);
-            border-left: 4px solid #00c6ff;
-            border-radius: 12px;
-            padding: 14px;
-            margin-bottom: 24px;
-            font-size: 0.95rem;
-            line-height: 1.4;
-            color: var(--text-primary);
-        }
-
-        /* Hero Layout */
-        .hero-block {
-            text-align: center;
-            margin-bottom: 28px;
-        }
-        .hero-temp {
-            font-size: 4.5rem;
-            font-weight: 200;
-            margin: 10px 0 0 0;
-            letter-spacing: -1px;
-        }
-        .hero-location {
-            font-size: 1.25rem;
-            font-weight: 500;
-            margin: 0;
-        }
-
-        /* Advanced Atmospheric Metrics Grid */
-        .metrics-matrix {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 14px;
-            margin-bottom: 20px;
-        }
-        .matrix-cell {
-            background: rgba(0, 0, 0, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 20px;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-        .cell-label {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-        }
-        .cell-value {
-            font-size: 1.35rem;
-            font-weight: 600;
-        }
-
-        /* Reset Trigger */
-        .purge-trigger {
-            background: rgba(255, 75, 75, 0.1);
-            border: 1px solid rgba(255, 75, 75, 0.2);
-            border-radius: 14px;
-            color: #ff4b4b;
-            width: 100%;
-            padding: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .purge-trigger:hover { background: rgba(255, 75, 75, 0.2); }
+        body.dark-mode { --bg-color: #000000; --text-color: #ffffff; }
+        body { background: var(--bg-color); color: var(--text-color); transition: background var(--transition-speed); font-family: -apple-system, sans-serif; }
+        
+        .fade-in { opacity: 0; transform: translateY(20px); transition: all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        .fade-in.visible { opacity: 1; transform: translateY(0); }
+        
+        .temp-display { font-size: 5rem; font-weight: 200; cursor: pointer; }
     </style>
 </head>
 <body>
-    <div class="fluid-bg" id="dynamic-glow"></div>
-
-    <div class="glass-chassis" id="card">
-        <div class="search-row">
-            <input type="text" id="city-input" placeholder="Enter target coordinates/city...">
-            <button id="search-btn">Analyze</button>
+    <div id="app">
+        <input type="text" id="city-search" placeholder="Enter city">
+        <div id="weather-content" class="fade-in">
+            <h1 class="temp-display" id="temp">--°</h1>
+            <p id="summary">Search for a city to begin.</p>
         </div>
-
-        <div class="analyst-banner" id="analyst-view">
-            <strong>SYSTEM READY:</strong> Enter an operational theater to run atmospheric fusion passes.
-        </div>
-
-        <div class="hero-block">
-            <p class="hero-location" id="loc-display">Global Terminal</p>
-            <h1 class="hero-temp" id="temp-display">--°</h1>
-        </div>
-
-        <div class="metrics-matrix">
-            <div class="matrix-cell"><span class="cell-label">Apparent Temp</span><span class="cell-value" id="m-feels">--</span></div>
-            <div class="matrix-cell"><span class="cell-label">Precipitation</span><span class="cell-value" id="m-precip">--</span></div>
-            <div class="matrix-cell"><span class="cell-label">Humidity Index</span><span class="cell-value" id="m-humidity">--</span></div>
-            <div class="matrix-cell"><span class="cell-label">Wind Velocity</span><span class="cell-value" id="m-wind">--</span></div>
-            <div class="matrix-cell"><span class="cell-label">Barometric Pres.</span><span class="cell-value" id="m-pressure">--</span></div>
-            <div class="matrix-cell"><span class="cell-label">Optical Vis.</span><span class="cell-value" id="m-visibility">--</span></div>
-            <div class="matrix-cell"><span class="cell-label">Solar Radiation (UV)</span><span class="cell-value" id="m-uv">--</span></div>
-            <div class="matrix-cell"><span class="cell-label">Wind Vector</span><span class="cell-value" id="m-direction">--</span></div>
-        </div>
-
-        <button class="purge-trigger" id="clear-btn">Purge Matrix & Mesh Networks</button>
     </div>
-
     <script src="app.js"></script>
 </body>
 </html>
