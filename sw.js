@@ -1,37 +1,75 @@
-const CRITICAL_CACHE_IDENTITY = 'aether-weather-v1';
-const HARD_MANIFEST = [
+/**
+ * AETHER SERVICE WORKER // ADVANCED CACHING ENGINE
+ * Strategy: Cache-First for assets, Stale-While-Revalidate for dynamic API data.
+ */
+
+const VERSION = 'aether-v1';
+const CACHE_STATIC = 'static-assets-' + VERSION;
+const CACHE_API = 'weather-api-' + VERSION;
+
+const ASSETS_TO_PRECACHE = [
     './',
     './index.html',
-    './app.js',
-    './sw.js'
+    './app.js'
 ];
 
-self.addEventListener('install', (e) => {
-    e.waitUntil(
-        caches.open(CRITICAL_CACHE_IDENTITY).then((c) => c.addAll(HARD_MANIFEST))
+// 1. INSTALL: Precache the static shell
+self.addEventListener('install', (event) => {
+    event.waitUntil(
+        caches.open(CACHE_STATIC).then((cache) => cache.addAll(ASSETS_TO_PRECACHE))
     );
     self.skipWaiting();
 });
 
-self.addEventListener('activate', (e) => {
-    e.waitUntil(
-        caches.keys().then((ks) => Promise.all(ks.map((k) => {
-            if (k !== CRITICAL_CACHE_IDENTITY) return caches.delete(k);
-        })))
+// 2. ACTIVATE: Cleanup old versions
+self.addEventListener('activate', (event) => {
+    event.waitUntil(
+        caches.keys().then((keys) => {
+            return Promise.all(
+                keys.filter(key => key !== CACHE_STATIC && key !== CACHE_API)
+                    .map(key => caches.delete(key))
+            );
+        })
     );
     self.clients.claim();
 });
 
-self.addEventListener('fetch', (e) => {
-    e.respondWith(
-        caches.match(e.request).then((cached) => {
-            if (cached) return cached;
-            return fetch(e.request).then((res) => {
-                if(!res || res.status !== 200 || res.type !== 'basic') return res;
-                const activeDuplicate = res.clone();
-                caches.open(CRITICAL_CACHE_IDENTITY).then((c) => c.put(e.request, activeDuplicate));
-                return res;
-            });
-        })
-    );
+// 3. FETCH: The Routing Engine
+self.addEventListener('fetch', (event) => {
+    const url = new URL(event.request.url);
+
+    // Strategy A: API Requests (Stale-While-Revalidate)
+    if (url.origin === 'https://api.open-meteo.com' || url.origin === 'https://geocoding-api.open-meteo.com') {
+        event.respondWith(staleWhileRevalidate(event.request, CACHE_API));
+    } 
+    // Strategy B: Static Assets (Cache-First)
+    else {
+        event.respondWith(cacheFirst(event.request, CACHE_STATIC));
+    }
 });
+
+// --- STRATEGY HELPERS ---
+
+async function cacheFirst(request, cacheName) {
+    const cache = await caches.open(cacheName);
+    const cachedResponse = await cache.match(request);
+    
+    // Return cache if found, else fetch from network
+    return cachedResponse || fetch(request);
+}
+
+async function staleWhileRevalidate(request, cacheName) {
+    const cache = await caches.open(cacheName);
+    const cachedResponse = await cache.match(request);
+
+    // Start background network fetch
+    const fetchPromise = fetch(request).then((networkResponse) => {
+        if (networkResponse.ok) {
+            cache.put(request, networkResponse.clone());
+        }
+        return networkResponse;
+    });
+
+    // Return cached immediately if available, or wait for network
+    return cachedResponse || fetchPromise;
+}
