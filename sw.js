@@ -31,7 +31,7 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-    // Intercept requests for static structural layout
+    // Intercept requests for static structural layou
     event.respondWith(
         caches.match(event.request).then((cachedResponse) => {
             if (cachedResponse) {
@@ -49,4 +49,6 @@ self.addEventListener('fetch', (event) => {
             });
         })
     );
+    /
 });
+//
