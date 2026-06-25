@@ -2,95 +2,32 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Weather</title>
     <style>
-        /* Apple-Style System Typography */
-        :root {
-            --bg-color: #f2f2f7;
-            --text-color: #000000;
-        }
+        :root { --bg-color: #f2f2f7; --text-color: #000; }
+        body { margin: 0; background-color: var(--bg-color); font-family: -apple-system, sans-serif; }
         
-        body {
-            margin: 0;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro", "Segoe UI", Roboto, sans-serif;
-            overflow-y: scroll;
-            scroll-snap-type: y mandatory; /* Native snap scrolling */
-        }
-
-        /* Frosted Glass Card Design */
-        .weather-card {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            margin: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            scroll-snap-align: start; /* Locks to top of screen */
-            min-height: 100px;
-        }
-
-        .search-container {
-            background: rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 15px;
-            margin: 15px;
-            display: flex;
-            align-items: center;
-        }
-
-        input {
-            background: transparent;
-            border: none;
-            width: 100%;
-            font-size: 1.1rem;
-            outline: none;
-        }
+        .hero { padding: 40px 20px; text-align: center; }
+        #city-display { font-size: 3rem; font-weight: 700; }
+        
+        .search-area { position: sticky; top: 0; padding: 20px; }
+        #city-search { width: 90%; padding: 15px; border-radius: 12px; border: none; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        
+        #results { list-style: none; padding: 0; margin: 20px; }
+        .result-item { padding: 15px; background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); margin-bottom: 10px; border-radius: 12px; cursor: pointer; }
     </style>
 </head>
 <body>
-
-    <header style="padding: 20px; font-size: 2rem; font-weight: 700;">Weather</header>
-
-    <main id="weather-list">
-        <!-- Weather Cards -->
-        <div class="weather-card">
-            <div><strong>Regina</strong><br><small>My Location</small></div>
-            <div style="font-size: 2rem;">22°</div>
-        </div>
-
-        <div class="weather-card">
-            <div><strong>Unity</strong><br><small>2:55 PM</small></div>
-            <div style="font-size: 2rem;">23°</div>
-        </div>
-
-        <div class="weather-card">
-            <div><strong>Toronto</strong><br><small>4:55 PM</small></div>
-            <div style="font-size: 2rem;">18°</div>
-        </div>
-    </main>
-
-    <!-- Native-style Search Input -->
-    <div class="search-container">
-        <input type="text" id="city-search" placeholder="Search for a city or airport">
+    <div class="hero">
+        <h1 id="city-display">Select a City</h1>
+        <div id="temp-display">--°</div>
     </div>
 
-    <script>
-        // Save city on enter
-        document.getElementById('city-search').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                localStorage.setItem('lastCity', e.target.value);
-                alert('City saved: ' + e.target.value);
-            }
-        });
-    </script>
+    <div class="search-area">
+        <input type="text" id="city-search" placeholder="Search city...">
+        <ul id="results"></ul>
+    </div>
+    
+    <script src="app.js"></script>
 </body>
 </html>
