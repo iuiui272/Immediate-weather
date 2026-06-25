@@ -47,16 +47,16 @@ const runAtmosphericAnalysis = (m) => {
 };
 
 const renderUpdate = (metrics, area) => {
-    UI.temp.innerText = `${metrics.temp}°`;
+    UI.temp.innerText = metrics.temp + '°';
     UI.location.innerText = area;
-    UI.fields.feels.innerText = `${metrics.feelsLike}°C`;
-    UI.fields.precip.innerText = `${metrics.precipitation} mm`;
-    UI.fields.humidity.innerText = `${metrics.humidity}%`;
-    UI.fields.wind.innerText = `${metrics.windSpeed} km/h`;
-    UI.fields.pressure.innerText = `${metrics.pressure} hPa`;
-    UI.fields.visibility.innerText = `${metrics.visibility} km`;
+    UI.fields.feels.innerText = metrics.feelsLike + '°C';
+    UI.fields.precip.innerText = metrics.precipitation + ' mm';
+    UI.fields.humidity.innerText = metrics.humidity + '%';
+    UI.fields.wind.innerText = metrics.windSpeed + ' km/h';
+    UI.fields.pressure.innerText = metrics.pressure + ' hPa';
+    UI.fields.visibility.innerText = metrics.visibility + ' km';
     UI.fields.uv.innerText = metrics.uvIndex;
-    UI.fields.direction.innerText = `${metrics.windDirection}°`;
+    UI.fields.direction.innerText = metrics.windDirection + '°';
     
     runAtmosphericAnalysis(metrics);
 };
@@ -64,18 +64,18 @@ const renderUpdate = (metrics, area) => {
 // Mesh Node Intercepts
 localMesh.onmessage = (e) => {
     if (e.data.type === 'MESH_PUSH') {
-        renderUpdate(e.data.metrics, `${e.data.name} (P2P Mesh)`);
+        renderUpdate(e.data.metrics, e.data.name + ' (P2P Mesh)');
     } else if (e.data.type === 'MESH_WIPE') {
         wipeUI("System cleared by remote network peer.");
     }
 };
 
-// Multi-Source Synthesis Framework
+// Multi-Source Synthesis Framework (Jekyll-Safe Concatenation)
 const fetchSynthesizedArray = async (lat, lon) => {
     const vectors = [
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,pressure_msl,wind_speed_10m,wind_direction_10m,visibility,uv_index`,
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,pressure_msl,wind_speed_10m,wind_direction_10m,visibility,uv_index&models=gfs_global`,
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,pressure_msl,wind_speed_10m,wind_direction_10m,visibility,uv_index&models=icon_global`
+        'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + '&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,pressure_msl,wind_speed_10m,wind_direction_10m,visibility,uv_index',
+        'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + '&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,pressure_msl,wind_speed_10m,wind_direction_10m,visibility,uv_index&models=gfs_global',
+        'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + '&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,pressure_msl,wind_speed_10m,wind_direction_10m,visibility,uv_index&models=icon_global'
     ];
 
     const tasks = await Promise.allSettled(vectors.map(v => fetch(v).then(r => r.json())));
@@ -108,10 +108,10 @@ document.getElementById('search-btn').addEventListener('click', async () => {
 
     if (navigator.vibrate) navigator.vibrate(15);
     UI.card.animate([{transform:'scale(1)'},{transform:'scale(1.02)'},{transform:'scale(1)'}], {duration:200});
-    UI.analyst.innerHTML = "<strong>PROCESSING:</strong> Running triple-model predictive telemetry matrix...";
+    UI.analyst.innerHTML = '<strong>PROCESSING:</strong> Running triple-model predictive telemetry matrix...';
 
     try {
-        const resolution = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=1`).then(r => r.json());
+        const resolution = await fetch('https://geocoding-api.open-meteo.com/v1/search?name=' + encodeURIComponent(query) + '&count=1').then(r => r.json());
         if (!resolution.results || resolution.results.length === 0) throw new Error("Target destination vector invalid.");
         
         const { latitude, longitude, name } = resolution.results[0];
@@ -125,14 +125,14 @@ document.getElementById('search-btn').addEventListener('click', async () => {
             metrics: computedMetrics
         });
     } catch (err) {
-        UI.analyst.innerHTML = `<strong>ERROR:</strong> ${err.message}`;
+        UI.analyst.innerHTML = '<strong>ERROR:</strong> ' + err.message;
     }
 });
 
 const wipeUI = (text) => {
     UI.temp.innerText = "--°";
     UI.location.innerText = "Global Terminal";
-    UI.analyst.innerHTML = `<strong>SYSTEM RESET:</strong> ${text}`;
+    UI.analyst.innerHTML = '<strong>SYSTEM RESET:</strong> ' + text;
     Object.keys(UI.fields).forEach(f => UI.fields[f].innerText = "--");
 };
 
