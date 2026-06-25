@@ -1,100 +1,135 @@
-// --- 1. LOCAL STORAGE & MESH NETWORKING ---
-const meshChannel = new BroadcastChannel('weather_mesh_network');
+// Local-First P2P Data Layer
+const meshNetwork = new BroadcastChannel('liquid_weather_mesh');
 
-const clearLocalData = async () => {
-    if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-    const dbs = await window.indexedDB.databases();
-    dbs.forEach(db => window.indexedDB.deleteDatabase(db.name));
-    const keys = await caches.keys();
-    await Promise.all(keys.map(k => caches.delete(k)));
-    
-    updateUI("--", "Data Cleared. Awaiting input.");
-    meshChannel.postMessage({ type: 'CLEAR' }); // Broadcast clear command to peers
+// UI Element Targets
+const elements = {
+    temp: document.getElementById('temp'),
+    status: document.getElementById('status'),
+    feels: document.getElementById('val-feels'),
+    precip: document.getElementById('val-precip'),
+    humidity: document.getElementById('val-humidity'),
+    pressure: document.getElementById('val-pressure'),
+    visibility: document.getElementById('val-visibility'),
+    uv: document.getElementById('val-uv'),
+    card: document.getElementById('card'),
+    cityInput: document.getElementById('city-input')
 };
 
-// Listen for peer data (Simulating WebRTC/Local Mesh)
-meshChannel.onmessage = (event) => {
-    if (event.data.type === 'SYNC_WEATHER') {
-        console.log("Data received from local mesh peer.");
-        updateUI(event.data.temp, `Synced via Mesh: ${event.data.city}`);
-    } else if (event.data.type === 'CLEAR') {
-        updateUI("--", "Data Cleared by peer.");
+// Render Interface States
+const renderMetrics = (metrics, locationName) => {
+    elements.temp.innerText = `${metrics.temp}°C`;
+    elements.status.innerText = `Fused Model: ${locationName}`;
+    elements.feels.innerText = `${metrics.feelsLike}°C`;
+    elements.precip.innerText = `${metrics.precipitation} mm`;
+    elements.humidity.innerText = `${metrics.humidity}%`;
+    elements.pressure.innerText = `${metrics.pressure} hPa`;
+    elements.visibility.innerText = `${metrics.visibility} km`;
+    elements.uv.innerText = metrics.uvIndex;
+};
+
+// Listen to Mesh Network Synchronization Broadcasts
+meshNetwork.onmessage = (event) => {
+    if (event.data.type === 'MESH_SYNC') {
+        console.log('Synchronized metrics over mesh node.');
+        renderMetrics(event.data.metrics, event.data.location);
+    } else if (event.data.type === 'MESH_PURGE') {
+        resetUI('Cache purged via adjacent node.');
     }
 };
 
-// --- 2. MULTI-SOURCE FUSION ENGINE ---
-const fetchFusedWeather = async (lat, lon) => {
-    // Fetching from 3 different forecasting models simultaneously
-    const urls = [
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m`, // Primary
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m&models=gfs_global`, // GFS Model
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m&models=icon_global` // ICON Model
+// Data Fusion Engine (Aggregates 3 distinct global models via Open-Meteo)
+const runDataFusion = async (lat, lon) => {
+    const endpoints = [
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,pressure_msl,visibility,uv_index`, // Model 1: Best Match
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,pressure_msl,visibility,uv_index&models=gfs_global`, // Model 2: GFS
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,pressure_msl,visibility,uv_index&models=icon_global` // Model 3: ICON
     ];
 
-    const responses = await Promise.allSettled(urls.map(url => fetch(url).then(r => r.json())));
+    const tasks = await Promise.allSettled(endpoints.map(url => fetch(url).then(r => r.json())));
     
-    let validTemps = [];
-    responses.forEach(res => {
-        if (res.status === 'fulfilled' && res.value.current) {
-            validTemps.push(res.value.current.temperature_2m);
-        }
-    });
+    // Extracted clean array sets
+    const models = tasks.filter(t => t.status === 'fulfilled' && t.value.current).map(t => t.value.current);
+    if (models.length === 0) throw new Error("Data synthesis platforms unavailable.");
 
-    if (validTemps.length === 0) throw new Error("All data sources failed.");
+    // Weight allocations for synthesis engine (Primary: 50%, Secondary: 25% each)
+    const weights = [0.5, 0.25, 0.25];
+    
+    const extractWeightedValue = (key) => {
+        let sum = 0;
+        let runningWeight = 0;
+        models.forEach((model, i) => {
+            if (model[key] !== undefined) {
+                sum += model[key] * weights[i];
+                runningWeight += weights[i];
+            }
+        });
+        return (sum / runningWeight);
+    };
 
-    // Weighted Algorithm (Prioritizing the primary source, falling back to averages)
-    const weights = [0.6, 0.2, 0.2]; 
-    let synthesizedTemp = 0;
-    let totalWeight = 0;
-
-    validTemps.forEach((temp, index) => {
-        const weight = weights[index] || (1 / validTemps.length);
-        synthesizedTemp += temp * weight;
-        totalWeight += weight;
-    });
-
-    return (synthesizedTemp / totalWeight).toFixed(1);
+    return {
+        temp: extractWeightedValue('temperature_2m').toFixed(1),
+        feelsLike: extractWeightedValue('apparent_temperature').toFixed(1),
+        precipitation: extractWeightedValue('precipitation').toFixed(2),
+        humidity: Math.round(extractWeightedValue('relative_humidity_2m')),
+        pressure: Math.round(extractWeightedValue('pressure_msl')),
+        visibility: (extractWeightedValue('visibility') / 1000).toFixed(1), // Convert meters to km
+        uvIndex: extractWeightedValue('uv_index').toFixed(1)
+    };
 };
 
-// --- 3. UI CONTROLLER ---
-const updateUI = (temp, status) => {
-    document.getElementById('temp').innerText = temp !== "--" ? `${temp}°C` : temp;
-    document.getElementById('status').innerText = status;
-};
-
+// Event Coordinators
 document.getElementById('search-btn').addEventListener('click', async () => {
-    const city = document.getElementById('city-input').value;
-    if (!city) return;
-    
-    updateUI("...", "Aggregating 3 data sources...");
-    if (navigator.vibrate) navigator.vibrate(15);
-    document.getElementById('card').animate([{transform: 'scale(1)'}, {transform: 'scale(1.03)'}, {transform: 'scale(1)'}], 200);
+    const query = elements.cityInput.value.trim();
+    if (!query) return;
+
+    if (navigator.vibrate) navigator.vibrate(12);
+    elements.card.animate([{transform: 'scale(1)'}, {transform: 'scale(1.02)'}, {transform: 'scale(1)'}], 250);
+    elements.status.innerText = "Interrogating multi-provider streams...";
 
     try {
-        // 1. Geocode
-        const geo = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}`).then(r => r.json());
-        if (!geo.results) throw new Error("City not found");
-        const { latitude, longitude, name } = geo.results[0];
+        const geoResponse = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=1`).then(r => r.json());
+        if (!geoResponse.results || geoResponse.results.length === 0) throw new Error("Target city unrecognized.");
         
-        // 2. Synthesize Data
-        const finalTemp = await fetchFusedWeather(latitude, longitude);
-        
-        // 3. Update UI
-        updateUI(finalTemp, `Fused Weather in ${name}`);
+        const { latitude, longitude, name } = geoResponse.results[0];
+        const fusedMetrics = await runDataFusion(latitude, longitude);
 
-        // 4. Broadcast to Mesh Network
-        meshChannel.postMessage({ type: 'SYNC_WEATHER', temp: finalTemp, city: name });
+        // Update Context UI
+        renderMetrics(fusedMetrics, name);
 
-    } catch (e) {
-        updateUI("--", e.message || "Connection failed.");
+        // Disseminate to P2P App Instances over Mesh
+        meshNetwork.postMessage({
+            type: 'MESH_SYNC',
+            location: name,
+            metrics: fusedMetrics
+        });
+
+    } catch (err) {
+        elements.status.innerText = err.message;
     }
 });
 
-document.getElementById('clear-btn').addEventListener('click', clearLocalData);
+const resetUI = (msg = "Local instance reset.") => {
+    elements.temp.innerText = "--°C";
+    elements.status.innerText = msg;
+    ['val-feels', 'val-precip', 'val-humidity', 'val-pressure', 'val-visibility', 'val-uv'].forEach(id => {
+        document.getElementById(id).innerText = "--";
+    });
+};
 
-// --- 4. OFFLINE SERVICE WORKER INIT ---
+document.getElementById('clear-btn').addEventListener('click', async () => {
+    if (navigator.vibrate) navigator.vibrate([60, 40, 60]);
+    const databases = await window.indexedDB.databases();
+    databases.forEach(db => window.indexedDB.deleteDatabase(db.name));
+    const cachesKeys = await caches.keys();
+    await Promise.all(cachesKeys.map(k => caches.delete(k)));
+    
+    resetUI("Local cache purged.");
+    meshNetwork.postMessage({ type: 'MESH_PURGE' });
+});
+
+// Offline Core Standup
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').catch(err => console.error('SW sync failed:', err));
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
     });
 }
