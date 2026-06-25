@@ -1,40 +1,18 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    const statusText = document.getElementById('status-text');
-
-    // 1. Service Worker & Priority Background Sync
+    // 1. Register Service Worker
     if ('serviceWorker' in navigator) {
         try {
-            const registration = await navigator.serviceWorker.register('/sw.js');
-            console.log('Offline core mounted:', registration.scope);
-            
-            // Trigger background sync for severe weather immediately
-            if ('sync' in registration) {
-                await registration.sync.register('priority-weather-fetch');
-            }
-        } catch (error) {
-            console.error('Offline core failure:', error);
-        }
+            const reg = await navigator.serviceWorker.register('/sw.js');
+            if ('sync' in reg) await reg.sync.register('priority-weather-fetch');
+        } catch (e) { console.error(e); }
     }
 
-    // 2. Request Smart Warning Permissions
-    if ('Notification' in window && Notification.permission !== 'granted') {
-        const permission = await Notification.requestPermission();
-        if (permission === 'granted') {
-            console.log('Emergency alerts enabled.');
-        }
-    }
+    // 2. Request Notifications
+    if (Notification.permission !== 'granted') await Notification.requestPermission();
 
-    // 3. Initialize Haptics Engine (Navigator Vibrate)
-    const triggerHaptic = (pattern = [10, 30, 10]) => {
-        if ('vibrate' in navigator) {
-            navigator.vibrate(pattern);
-        }
-    };
-
-    // Attach haptic feedback to the main card for UI engagement
-    document.getElementById('weather-container').addEventListener('click', () => {
-        triggerHaptic([15]); // Light tap
+    // 3. Interaction & Haptics
+    document.getElementById('card').addEventListener('click', () => {
+        if (navigator.vibrate) navigator.vibrate(15);
+        document.getElementById('card').animate([{transform: 'scale(1)'}, {transform: 'scale(1.03)'}, {transform: 'scale(1)'}], 200);
     });
-
-    statusText.innerText = "Awaiting peer discovery and sensor data...";
 });
