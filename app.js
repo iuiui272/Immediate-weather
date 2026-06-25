@@ -1,4 +1,4 @@
-// Local-First P2P Data Layer
+// Local-First P2P Data Laye
 const meshNetwork = new BroadcastChannel('liquid_weather_mesh');
 
 // UI Element Targets
