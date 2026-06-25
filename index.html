@@ -5,52 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Liquid Glass Weather</title>
     <style>
-        :root {
-            --glass-bg: rgba(255, 255, 255, 0.1);
-            --glass-border: rgba(255, 255, 255, 0.2);
-        }
-        
-        body {
-            margin: 0;
-            height: 100vh;
-            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364); /* Deep weather background */
-            font-family: system-ui, -apple-system, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            overflow: hidden;
-        }
-
-        .glass-card {
-            background: var(--glass-bg);
-            /* The Liquid Glass Effect */
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border: 1px solid var(--glass-border);
-            border-radius: 24px;
-            padding: 2.5rem;
-            width: 90%;
-            max-width: 400px;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-            /* Force GPU acceleration for smooth haptic animations */
-            transform: translateZ(0); 
-            will-change: transform;
-            transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        }
-
-        /* Haptic tap simulation */
-        .glass-card:active {
-            transform: scale(0.98);
-        }
+        :root { --glass-bg: rgba(255, 255, 255, 0.1); --glass-border: rgba(255, 255, 255, 0.15); }
+        body { margin: 0; height: 100vh; background: #0f2027; display: flex; justify-content: center; align-items: center; color: white; overflow: hidden; font-family: sans-serif; }
+        .liquid-blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.5; z-index: -1; animation: float 20s infinite ease-in-out; }
+        .blob-0 { width: 300px; height: 300px; background: #00c6ff; top: 10%; left: 10%; }
+        .blob-1 { width: 400px; height: 400px; background: #f77062; bottom: 10%; right: 10%; animation-delay: -10s; }
+        .glass-card { background: var(--glass-bg); backdrop-filter: blur(20px) saturate(180%); border: 1px solid var(--glass-border); border-radius: 24px; padding: 2.5rem; width: 300px; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.37); transform: translateZ(0); }
+        .glass-icon { width: 100px; height: 100px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); animation: flash 2s infinite; }
+        @keyframes float { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(50px, -50px); } }
+        @keyframes flash { 0%, 90%, 100% { opacity: 0.8; } 95% { opacity: 1; } }
     </style>
 </head>
 <body>
-    <div class="glass-card" id="weather-container">
-        <h2 id="temperature">--°C</h2>
-        <p id="status-text">Initializing mesh network & local storage...</p>
+    <svg style="display: none;"><symbol id="icon-storm" viewBox="0 0 100 100"><path d="M25,60 a20,20 0 0,1 0,-40 a24,24 0 0,1 48,0 a18,18 0 0,1 0,36 Z" fill="rgba(255,255,255,0.3)"/><path d="M50,45 L40,70 L60,65 L50,95" stroke="#FFD700" stroke-width="4" fill="none"/></symbol></svg>
+    <div class="liquid-blob blob-0"></div><div class="liquid-blob blob-1"></div>
+    <div class="glass-card" id="card">
+        <svg class="glass-icon"><use href="#icon-storm"></use></svg>
+        <h2 id="temp">28°C</h2>
+        <p id="status">Severe Warning: Seek Shelter</p>
     </div>
-
     <script src="app.js"></script>
 </body>
 </html>
