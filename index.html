@@ -3,67 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AETHER // Weather</title>
+    <title>Weather</title>
     <style>
+        /* Apple-Style System Typography */
         :root {
-            --bg-color: #ffffff;
+            --bg-color: #f2f2f7;
             --text-color: #000000;
-            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
-        body.dark-mode { --bg-color: #000000; --text-color: #ffffff; }
         
         body {
             margin: 0;
             background-color: var(--bg-color);
             color: var(--text-color);
-            font-family: var(--font-family);
-            transition: background-color 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro", "Segoe UI", Roboto, sans-serif;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory; /* Native snap scrolling */
         }
 
-        .section {
-            min-height: 80vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+        /* Frosted Glass Card Design */
+        .weather-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             padding: 20px;
-            opacity: 0;
-            transform: translateY(40px);
-            transition: all 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+            margin: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            scroll-snap-align: start; /* Locks to top of screen */
+            min-height: 100px;
         }
-        .section.visible { opacity: 1; transform: translateY(0); }
 
-        #hero { font-size: 8rem; font-weight: 200; margin: 0; }
-        .summary-text { font-size: 1.5rem; max-width: 600px; text-align: center; }
-        
-        nav { position: fixed; top: 0; width: 100%; padding: 20px; display: flex; justify-content: space-between; }
-        input { background: none; border: none; font-size: 1.2rem; color: inherit; border-bottom: 1px solid currentColor; }
+        .search-container {
+            background: rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 15px;
+            margin: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        input {
+            background: transparent;
+            border: none;
+            width: 100%;
+            font-size: 1.1rem;
+            outline: none;
+        }
     </style>
 </head>
 <body>
 
-    <nav>
-        <input type="text" id="city-search" placeholder="City...">
-        <button id="profile-btn">Profile</button>
-    </nav>
+    <header style="padding: 20px; font-size: 2rem; font-weight: 700;">Weather</header>
 
-    <main id="weather-container">
-        <section class="section" id="current-view">
-            <h1 id="hero">--°</h1>
-            <p id="summary" class="summary-text">Search a city to view atmospheric telemetry.</p>
-        </section>
+    <main id="weather-list">
+        <!-- Weather Cards -->
+        <div class="weather-card">
+            <div><strong>Regina</strong><br><small>My Location</small></div>
+            <div style="font-size: 2rem;">22°</div>
+        </div>
 
-        <section class="section" id="past-view">
-            <h2>Historical Context</h2>
-            <div id="past-data">Loading records...</div>
-        </section>
+        <div class="weather-card">
+            <div><strong>Unity</strong><br><small>2:55 PM</small></div>
+            <div style="font-size: 2rem;">23°</div>
+        </div>
 
-        <section class="section" id="future-view">
-            <h2>Future Trajectory</h2>
-            <div id="future-data">Loading projections...</div>
-        </section>
+        <div class="weather-card">
+            <div><strong>Toronto</strong><br><small>4:55 PM</small></div>
+            <div style="font-size: 2rem;">18°</div>
+        </div>
     </main>
 
-    <script src="app.js"></script>
+    <!-- Native-style Search Input -->
+    <div class="search-container">
+        <input type="text" id="city-search" placeholder="Search for a city or airport">
+    </div>
+
+    <script>
+        // Save city on enter
+        document.getElementById('city-search').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                localStorage.setItem('lastCity', e.target.value);
+                alert('City saved: ' + e.target.value);
+            }
+        });
+    </script>
 </body>
 </html>
