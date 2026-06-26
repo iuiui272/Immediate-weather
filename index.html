@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Atmosphere</title>
+    <title>Weather</title>
     <style>
-        /* --- SYSTEM DESIGN SYSTEM VARIABLES --- */
+        /* --- APPLE SYSTEM DESIGN VARIABLES --- */
         :root {
             --bg-pure: #f5f5f7;
             --bg-blend: rgba(255, 255, 255, 0.6);
@@ -18,16 +18,16 @@
             --blur-radius: 30px;
         }
 
-        /* Deep Adverse Weather & Night Mutation State */
+        /* Dark Mode / Adverse Dynamic State */
         .adverse-state {
-            --bg-pure: #0b0c10;
-            --bg-blend: rgba(15, 17, 23, 0.7);
-            --card-bg: rgba(255, 255, 255, 0.06);
+            --bg-pure: #1a1c24;
+            --bg-blend: rgba(25, 28, 38, 0.7);
+            --card-bg: rgba(255, 255, 255, 0.08);
             --card-border: rgba(255, 255, 255, 0.08);
             --text-primary: #f5f5f7;
-            --text-secondary: #86868b;
+            --text-secondary: #9a9a9f;
             --accent-blue: #2997ff;
-            --shadow: rgba(0, 0, 0, 0.4);
+            --shadow: rgba(0, 0, 0, 0.3);
         }
 
         * {
@@ -35,19 +35,18 @@
             margin: 0;
             padding: 0;
             -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
         }
 
         body {
             background-color: var(--bg-pure);
             color: var(--text-primary);
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif;
             letter-spacing: -0.015em;
             overflow-x: hidden;
-            transition: background-color 1.2s cubic-bezier(0.25, 1, 0.5, 1), color 1.2s cubic-bezier(0.25, 1, 0.5, 1);
+            transition: background-color 0.8s ease, color 0.8s ease;
         }
 
-        /* --- FIXED APP NAVIGATION --- */
+        /* --- STYLISH NAVIGATION --- */
         .system-nav {
             position: fixed;
             top: 0;
@@ -55,86 +54,72 @@
             width: 100%;
             height: 70px;
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-end;
             align-items: center;
-            padding: 0 30px;
+            padding: 0 24px;
             z-index: 90;
-            background: linear-gradient(to bottom, var(--bg-pure) 20%, rgba(0,0,0,0));
         }
 
         .nav-action {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
             color: var(--text-primary);
-            padding: 10px 20px;
+            padding: 10px 18px;
             border-radius: 20px;
             font-size: 0.9rem;
             font-weight: 500;
             cursor: pointer;
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
-            transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.3s;
+            transition: transform 0.2s, background-color 0.3s;
         }
 
-        .nav-action:active {
-            transform: scale(0.96);
-        }
+        .nav-action:active { transform: scale(0.96); }
 
-        /* --- LAYOUT ARCHITECTURE --- */
+        /* --- MAIN VIEWPORT ARCHITECTURE --- */
         .app-viewports {
-            max-width: 1040px;
+            max-width: 800px;
             margin: 0 auto;
-            padding: 120px 24px 100px;
+            padding: 90px 24px 100px;
         }
 
-        /* Primary Temperature Target Block */
         .hero-telemetry {
             text-align: center;
-            padding: 40px 0 60px;
+            padding: 20px 0 40px;
         }
 
         .hero-telemetry h1 {
-            font-size: 2.8rem;
+            font-size: 2.6rem;
             font-weight: 600;
             margin-bottom: 4px;
-            letter-spacing: -0.02em;
         }
 
         .temperature-priority-render {
-            font-size: 9rem;
+            font-size: 8.5rem;
             font-weight: 100;
             line-height: 1;
-            margin-left: 0.25em;
-            letter-spacing: -0.05em;
+            margin-right: -0.2em;
+            letter-spacing: -0.04em;
         }
 
         .boring-summary-tray {
-            font-size: 1.2rem;
-            font-weight: 400;
+            font-size: 1.1rem;
             color: var(--text-secondary);
-            max-width: 480px;
+            max-width: 450px;
             margin: 20px auto 0;
-            line-height: 1.5;
+            line-height: 1.4;
         }
 
-        /* --- ANIMATION CONTENT SLIDE ENGINE --- */
-        .scroll-reveal {
-            opacity: 0;
-            transform: translateY(40px);
-            transition: opacity 1.4s cubic-bezier(0.2, 0.8, 0.2, 1), transform 1.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-        }
-
-        .scroll-reveal.evoked {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* --- DATA GRID GLASS COMPONENT DESIGN --- */
+        /* --- DISCOVERY MODULE TILES --- */
         .dashboard-matrix {
             display: grid;
-            grid-template-columns: 1fr;
-            gap: 24px;
-            margin-top: 24px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 550px) {
+            .dashboard-matrix { grid-template-columns: 1fr; }
         }
 
         .glass-module {
@@ -143,402 +128,373 @@
             box-shadow: 0 4px 30px var(--shadow);
             backdrop-filter: blur(var(--blur-radius));
             -webkit-backdrop-filter: blur(var(--blur-radius));
-            border-radius: 28px;
-            padding: 28px;
-            /* Will use hardware accelerated transitions for fluid gyro tilting */
-            transition: transform 0.1s linear, box-shadow 0.1s linear, background-color 0.5s ease, border-color 0.5s ease;
-            will-change: transform, box-shadow;
+            border-radius: 22px;
+            padding: 22px;
+            transition: transform 0.1s linear, box-shadow 0.1s linear;
         }
 
         .glass-module h2 {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             text-transform: uppercase;
             letter-spacing: 0.06em;
             color: var(--text-secondary);
-            margin-bottom: 20px;
+            margin-bottom: 12px;
             font-weight: 600;
+        }
+
+        .metrics-value {
+            font-size: 2.2rem;
+            font-weight: 300;
+            color: var(--text-primary);
         }
 
         .telemetry-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 16px 0;
+            padding: 10px 0;
             border-bottom: 1px solid var(--card-border);
         }
+        .telemetry-row:last-child { border-bottom: none; }
 
-        .telemetry-row:last-child {
-            border-bottom: none;
-        }
-
-        .telemetry-row .label {
-            font-size: 1.05rem;
-            color: var(--text-primary);
-        }
-
-        .telemetry-row .value {
-            font-size: 1.2rem;
-            font-weight: 500;
-        }
-
-        /* --- PROFILE AND CONTROL DRAWER --- */
-        #profile-drawer {
+        /* --- PLACES MANAGEMENT DRAWER --- */
+        #places-drawer {
             position: fixed;
             inset: 0;
             background: var(--bg-pure);
             z-index: 100;
             transform: translateY(100%);
-            transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
-            padding: 40px 24px;
+            transition: transform 0.45s cubic-bezier(0.25, 1, 0.5, 1);
+            padding: 30px 24px;
             overflow-y: auto;
         }
 
-        #profile-drawer.active {
-            transform: translateY(0);
-        }
+        #places-drawer.active { transform: translateY(0); }
 
-        .drawer-container {
-            max-width: 600px;
-            margin: 0 auto;
-        }
+        .drawer-container { max-width: 550px; margin: 0 auto; }
 
         .drawer-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 40px;
+            margin-bottom: 25px;
         }
 
-        .search-input-wrapper {
-            position: relative;
-            margin-bottom: 30px;
+        /* Unfolding Search Bar Mechanics */
+        .search-unfold-wrapper {
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transition: max-height 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.3s ease;
+            margin-bottom: 0;
+        }
+
+        .search-unfold-wrapper.expanded {
+            max-height: 80px;
+            opacity: 1;
+            margin-bottom: 20px;
         }
 
         #city-search-field {
             width: 100%;
-            padding: 18px 24px;
-            border-radius: 18px;
+            padding: 16px 20px;
+            border-radius: 16px;
             border: 1px solid var(--card-border);
             background: var(--card-bg);
             color: var(--text-primary);
-            font-size: 1.1rem;
+            font-size: 1rem;
             outline: none;
         }
 
-        /* Autocomplete UI List */
-        #autocomplete-response-list {
-            list-style: none;
-            margin-top: 12px;
-        }
+        /* Results & Saved Rows */
+        #autocomplete-response-list { list-style: none; margin-bottom: 15px; }
 
         .autocomplete-node {
-            padding: 18px 24px;
+            padding: 16px 20px;
             background: var(--card-bg);
             border: 1px solid var(--card-border);
             margin-bottom: 8px;
-            border-radius: 14px;
+            border-radius: 12px;
             cursor: pointer;
         }
 
-        .autocomplete-node:hover {
-            background: var(--card-border);
-        }
-
-        /* Saved Profiles System */
+        /* High-Fidelity Apple Style List Cards matching your screenshot */
         .profile-city-card {
-            background: var(--card-bg);
+            background: rgba(255, 255, 255, 0.12);
             border: 1px solid var(--card-border);
+            background-image: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(0,0,0,0.05));
+            box-shadow: 0 4px 20px var(--shadow);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
             border-radius: 20px;
             padding: 20px;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             cursor: pointer;
+            transition: transform 0.2s;
         }
+        .profile-city-card:active { transform: scale(0.98); }
 
-        /* --- CROSS PLATFORM ENGINE RESPONSIVENESS (IPHONE, IPAD, MAC) --- */
-        
-        /* iPad Adaptation */
-        @media (min-width: 720px) {
-            .hero-telemetry h1 { font-size: 3.5rem; }
-            .temperature-priority-render { font-size: 11rem; }
-            .dashboard-matrix {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        /* Mac / Widescreen Desktop Adaptation */
-        @media (min-width: 1040px) {
-            .app-viewports { padding-top: 160px; }
-            .hero-telemetry h1 { font-size: 4rem; }
-            .temperature-priority-render { font-size: 13rem; }
-            .dashboard-matrix {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 32px;
-            }
+        .offline-badge {
+            background: #ff9500;
+            color: #fff;
+            padding: 4px 10px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
 
     <nav class="system-nav">
-        <button class="nav-action" id="profile-trigger-btn">Profile Engine</button>
-        <button class="nav-action" id="direct-search-btn">+</button>
+        <button class="nav-action" id="places-trigger-btn">Places</button>
     </nav>
 
     <main class="app-viewports">
+        <div id="offline-status-banner" style="display: none; text-align: center;">
+            <span class="offline-badge">Offline Storage Data Mode</span>
+        </div>
+
         <section class="hero-telemetry">
             <h1 id="active-city-node">--</h1>
             <div class="temperature-priority-render" id="active-temp-node">--°</div>
-            <div class="boring-summary-tray" id="active-summary-node">Initialising localized atmospheric array metrics...</div>
+            <div class="boring-summary-tray" id="active-summary-node">Gathering sensory atmospheric matrix telemetry...</div>
         </section>
 
-        <div class="dashboard-matrix scroll-reveal" id="historical-matrix-module">
+        <div class="dashboard-matrix">
             <div class="glass-module">
-                <h2>Historical Metrics (Past Weather)</h2>
-                <div class="telemetry-row">
-                    <span class="label">Yesterday</span>
-                    <span class="value" id="past-offset-1">--</span>
-                </div>
-                <div class="telemetry-row">
-                    <span class="label">48 Hours Ago</span>
-                    <span class="value" id="past-offset-2">--</span>
-                </div>
-                <div class="telemetry-row">
-                    <span class="label">72 Hours Ago</span>
-                    <span class="value" id="past-offset-3">--</span>
-                </div>
+                <h2>Feels Like</h2>
+                <div class="metrics-value" id="metrics-feels-like">--°</div>
             </div>
 
             <div class="glass-module">
-                <h2>Projections (Next Weather)</h2>
-                <div class="telemetry-row">
-                    <span class="label">Tomorrow</span>
-                    <span class="value" id="future-offset-1">--</span>
-                </div>
-                <div class="telemetry-row">
-                    <span class="label">Mid-Term Projection</span>
-                    <span class="value" id="future-offset-2">--</span>
-                </div>
-                <div class="telemetry-row">
-                    <span class="label">Long-Range Trend</span>
-                    <span class="value" id="future-offset-3">Stable</span>
-                </div>
+                <h2>UV Index</h2>
+                <div class="metrics-value" id="metrics-uv-index">--</div>
+            </div>
+
+            <div class="glass-module">
+                <h2>Historical Metrics</h2>
+                <div class="telemetry-row"><span>Yesterday</span><strong id="past-offset-1">--°</strong></div>
+                <div class="telemetry-row"><span>48 Hours Ago</span><strong id="past-offset-2">--°</strong></div>
+            </div>
+
+            <div class="glass-module">
+                <h2>Projections</h2>
+                <div class="telemetry-row"><span>Tomorrow</span><strong id="future-offset-1">--°</strong></div>
+                <div class="telemetry-row"><span>Next Day</span><strong id="future-offset-2">--°</strong></div>
             </div>
         </div>
     </main>
 
-    <div id="profile-drawer">
+    <div id="places-drawer">
         <div class="drawer-container">
             <header class="drawer-header">
-                <h1 style="font-size: 2rem; font-weight: 700;">Atmosphere Registry</h1>
-                <button class="nav-action" id="close-drawer-btn">Done</button>
+                <h1 style="font-size: 2.2rem; font-weight: 700;">Places</h1>
+                <div>
+                    <button class="nav-action" id="unfold-search-btn" style="margin-right: 8px; font-weight: 700;">+</button>
+                    <button class="nav-action" id="close-drawer-btn">Done</button>
+                </div>
             </header>
 
-            <div class="search-input-wrapper">
-                <input type="text" id="city-search-field" placeholder="Search parameters for city..." autocomplete="off">
-                <ul id="autocomplete-response-list"></ul>
+            <div class="search-unfold-wrapper" id="search-wrapper">
+                <input type="text" id="city-search-field" placeholder="Search for a city or airport" autocomplete="off">
             </div>
 
-            <section style="margin-top: 40px;">
-                <h3 style="font-size: 0.85rem; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 15px; letter-spacing: 0.05em;">Saved Profiles</h3>
+            <ul id="autocomplete-response-list"></ul>
+
+            <section style="margin-top: 25px;">
                 <div id="saved-cities-profile-pool"></div>
             </section>
         </div>
     </div>
 
     <script>
-        // DOM Registration Elements
-        const profileDrawer = document.getElementById('profile-drawer');
-        const profileTriggerBtn = document.getElementById('profile-trigger-btn');
-        const directSearchBtn = document.getElementById('direct-search-btn');
+        const placesDrawer = document.getElementById('places-drawer');
+        const placesTriggerBtn = document.getElementById('places-trigger-btn');
+        const unfoldSearchBtn = document.getElementById('unfold-search-btn');
+        const searchWrapper = document.getElementById('search-wrapper');
         const closeDrawerBtn = document.getElementById('close-drawer-btn');
         const citySearchField = document.getElementById('city-search-field');
         const autocompleteResponseList = document.getElementById('autocomplete-response-list');
         const savedCitiesProfilePool = document.getElementById('saved-cities-profile-pool');
-        const revealModules = document.querySelectorAll('.scroll-reveal');
+        const offlineBanner = document.getElementById('offline-status-banner');
 
-        // Drawer Operations Setup with Gyroscope Hooks
-        function activateDrawer() { 
-            profileDrawer.classList.add('active'); 
-            citySearchField.focus(); 
-            initGyroParallax(); 
+        // Drawer Mechanics
+        function openPlacesView() { placesDrawer.classList.add('active'); initGyroTelemetry(); }
+        function closePlacesView() { 
+            placesDrawer.classList.remove('active'); 
+            searchWrapper.classList.remove('expanded');
+            citySearchField.value = '';
+            autocompleteResponseList.innerHTML = '';
         }
-        function deactivateDrawer() { 
-            profileDrawer.classList.remove('active'); 
-            citySearchField.value = ''; 
-            autocompleteResponseList.innerHTML = ''; 
-        }
+
+        placesTriggerBtn.addEventListener('click', openPlacesView);
+        closeDrawerBtn.addEventListener('click', closePlacesView);
         
-        profileTriggerBtn.addEventListener('click', activateDrawer);
-        directSearchBtn.addEventListener('click', activateDrawer);
-        closeDrawerBtn.addEventListener('click', deactivateDrawer);
+        // Unfold Search Field Trigger Only Inside Places
+        unfoldSearchBtn.addEventListener('click', () => {
+            searchWrapper.classList.toggle('expanded');
+            if(searchWrapper.classList.contains('expanded')) citySearchField.focus();
+        });
 
-        // --- PARALLAX GYROSCOPE DEPTH TRANSLATION ENGINE ---
-        function initGyroParallax() {
-            // iOS requires explicit user interaction authorization to map sensor profiles
-            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-                DeviceOrientationEvent.requestPermission()
-                    .then(response => {
-                        if (response === 'granted') {
-                            window.addEventListener('deviceorientation', processDeviceTilt);
-                        }
-                    })
-                    .catch(error => console.warn("Gyroscope pipeline unauthorized or blocked."));
-            } else {
-                // Universal / Android fallback pipeline handling
-                window.addEventListener('deviceorientation', processDeviceTilt);
-            }
-        }
-
-        function processDeviceTilt(event) {
-            let tiltHorizontal = event.gamma; // Left-to-right rotation angle [-90, 90]
-            let tiltVertical = event.beta - 45; // Front-to-back rotation angle relative to generic holding stance
-
-            // Establish micro clamping parameters so spatial movement retains an ultra premium, minimal response
-            tiltHorizontal = Math.max(-12, Math.min(12, tiltHorizontal)) / 1.8;
-            tiltVertical = Math.max(-12, Math.min(12, tiltVertical)) / 1.8;
-
-            const targets = document.querySelectorAll('.glass-module');
-            targets.forEach(element => {
-                // Shift container matrix via 3D matrix tracking to eliminate layout repaint cycles
-                element.style.transform = `translate3d(${tiltHorizontal}px, ${tiltVertical}px, 0)`;
-                // Cast opposing fluid shadows to simulate true physics engine rendering
-                element.style.boxShadow = `${-tiltHorizontal}px ${-tiltVertical}px 30px var(--shadow)`;
-            });
-        }
-
-        // Slow Weighted Animation Observer Implementation
-        const animationEngineObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('evoked');
-                }
-            });
-        }, { threshold: 0.05 });
-
-        revealModules.forEach(mod => animationEngineObserver.observe(mod));
-
-        // Boring Summary Processing Algorithm
-        function compileBoringSummary(cityName, temp, isAdverse) {
-            if (isAdverse) {
-                return `Current environmental balance in ${cityName} is disrupted by active precipitation or dense low-altitude particulate visibility restrictions. Current scale reads ${temp}°C.`;
-            }
-            return `Atmospheric envelope in ${cityName} is settled. Minimal cloud mutations or severe disruptions detected. Temperature reads stable at ${temp}°C.`;
-        }
-
-        // Variable Environmental Adaptive Theme Engine
-        function dynamicallyMutateTheme(isAdverseWeather) {
-            const explicitHour = new Date().getHours();
-            const chronologicalNight = explicitHour < 6 || explicitHour > 20;
-
-            if (isAdverseWeather || chronologicalNight) {
+        // Dynamic Environmental Adaptive Theme Engine
+        function dynamicallyMutateTheme(weatherCode) {
+            const currentHour = new Date().getHours();
+            const isNight = currentHour < 6 || currentHour > 20;
+            if (weatherCode > 3 || isNight) {
                 document.documentElement.className = 'adverse-state';
             } else {
                 document.documentElement.className = '';
             }
         }
 
-        // Primary Weather Data Processing Engine
+        // Processing Telemetry Logic
         async function loadProfileTelemetry(name, lat, lon) {
             try {
-                const queryURI = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=temperature_2m_max,temperature_2m_min&past_days=3&timezone=auto`;
-                const queryExecution = await fetch(queryURI);
-                const networkPayload = await queryExecution.json();
+                const endpoint = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=apparent_temperature,uv_index&daily=temperature_2m_max,temperature_2m_min&past_days=2&timezone=auto`;
+                const executionFetch = await fetch(endpoint);
+                const payload = await executionFetch.json();
 
-                const currentTelemetry = networkPayload.current_weather;
-                const roundedTemp = Math.round(currentTelemetry.temperature);
-                const logicAdverseCode = currentTelemetry.weathercode > 3;
+                offlineBanner.style.display = 'none';
+                const currentData = payload.current_weather;
+                const currentHour = new Date().getHours();
 
-                // UI Rendering Injection Loops
+                const roundTemp = Math.round(currentData.temperature);
+                const feelsLike = Math.round(payload.hourly.apparent_temperature[currentHour] || currentData.temperature);
+                const uvVal = Math.round(payload.hourly.uv_index[currentHour] || 0);
+
+                // Update UI Nodes
                 document.getElementById('active-city-node').innerText = name;
-                document.getElementById('active-temp-node').innerText = roundedTemp + '°';
-                document.getElementById('active-summary-node').innerText = compileBoringSummary(name, roundedTemp, logicAdverseCode);
+                document.getElementById('active-temp-node').innerText = roundTemp + '°';
+                document.getElementById('metrics-feels-like').innerText = feelsLike + '°';
+                document.getElementById('metrics-uv-index').innerText = uvVal;
 
-                // Past / Future Delta Rendering Loops
-                if (networkPayload.daily) {
-                    const dailyData = networkPayload.daily;
-                    document.getElementById('past-offset-1').innerText = Math.round(dailyData.temperature_2m_max[2]) + '°';
-                    document.getElementById('past-offset-2').innerText = Math.round(dailyData.temperature_2m_max[1]) + '°';
-                    document.getElementById('past-offset-3').innerText = Math.round(dailyData.temperature_2m_max[0]) + '°';
-                    
-                    document.getElementById('future-offset-1').innerText = Math.round(dailyData.temperature_2m_max[4]) + '°';
-                    document.getElementById('future-offset-2').innerText = Math.round(dailyData.temperature_2m_max[5]) + '°';
+                if (payload.daily) {
+                    document.getElementById('past-offset-1').innerText = Math.round(payload.daily.temperature_2m_max[1]) + '°';
+                    document.getElementById('past-offset-2').innerText = Math.round(payload.daily.temperature_2m_max[0]) + '°';
+                    document.getElementById('future-offset-1').innerText = Math.round(payload.daily.temperature_2m_max[3]) + '°';
+                    document.getElementById('future-offset-2').innerText = Math.round(payload.daily.temperature_2m_max[4]) + '°';
                 }
 
-                // Theme Allocation Call
-                dynamicallyMutateTheme(logicAdverseCode);
+                document.getElementById('active-summary-node').innerText = currentData.weathercode > 3 ? 
+                    `Unfavorable environment conditions observed in ${name}. Atmospheric systems tracking active precipitation values.` : 
+                    `Environmental index in ${name} is settled. Microscale cloud parameters report clear visibility fields.`;
 
-                // LocalStorage State Preservation
-                const profilePayload = { name, lat, lon };
-                localStorage.setItem('primary_profile_context', JSON.stringify(profilePayload));
-                appendCityToProfileDatabase(profilePayload);
+                dynamicallyMutateTheme(currentData.weathercode);
 
-                if (profileDrawer.classList.contains('active')) deactivateDrawer();
+                // Multi-Tier Caching System (Robust Offline Memory Protection)
+                const cacheState = { name, lat, lon, roundTemp, feelsLike, uvVal, weathercode: currentData.weathercode, time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) };
+                localStorage.setItem('primary_offline_cache', JSON.stringify(cacheState));
+                appendCityToProfileDatabase(cacheState);
+
+                if (placesDrawer.classList.contains('active')) closePlacesView();
 
             } catch (networkFault) {
-                document.getElementById('active-summary-node').innerText = "Unable to process structural data streams.";
+                // Instantly Fallback to Saved Offline Metrics
+                offlineBanner.style.display = 'block';
+                const offlineBackup = localStorage.getItem('primary_offline_cache');
+                if(offlineBackup) {
+                    const parsedBackup = JSON.parse(offlineBackup);
+                    document.getElementById('active-city-node').innerText = parsedBackup.name;
+                    document.getElementById('active-temp-node').innerText = parsedBackup.roundTemp + '°';
+                    document.getElementById('metrics-feels-like').innerText = parsedBackup.feelsLike + '°';
+                    document.getElementById('metrics-uv-index').innerText = parsedBackup.uvVal;
+                    document.getElementById('active-summary-node').innerText = "Running structural offline framework memory modules.";
+                    dynamicallyMutateTheme(parsedBackup.weathercode);
+                }
             }
         }
 
-        // Profile Tracking Arrays
-        function appendCityToProfileDatabase(newProfile) {
-            let activePool = JSON.parse(localStorage.getItem('saved_profile_pool')) || [];
-            if (!activePool.some(p => p.name === newProfile.name)) {
-                activePool.push(newProfile);
-                localStorage.setItem('saved_profile_pool', JSON.stringify(activePool));
-                refreshProfileDatabaseUI();
+        // Profile Pools Pipeline
+        function appendCityToProfileDatabase(item) {
+            let list = JSON.parse(localStorage.getItem('saved_places_pool')) || [];
+            const elementIndex = list.findIndex(p => p.name === item.name);
+            if (elementIndex > -1) {
+                list[elementIndex] = item; // Update data parameters
+            } else {
+                list.push(item);
             }
+            localStorage.setItem('saved_places_pool', JSON.stringify(list));
+            renderPlacesPoolUI();
         }
 
-        function refreshProfileDatabaseUI() {
-            const activePool = JSON.parse(localStorage.getItem('saved_profile_pool')) || [];
+        function renderPlacesPoolUI() {
+            const list = JSON.parse(localStorage.getItem('saved_places_pool')) || [];
             savedCitiesProfilePool.innerHTML = '';
             
-            activePool.forEach(profile => {
-                const containerNode = document.createElement('div');
-                containerNode.className = 'profile-city-card';
-                containerNode.innerHTML = `<div><strong>${profile.name}</strong></div><div style="opacity:0.4;">Select ›</div>`;
-                containerNode.onclick = () => loadProfileTelemetry(profile.name, profile.lat, profile.lon);
-                savedCitiesProfilePool.appendChild(containerNode);
+            list.forEach(item => {
+                const node = document.createElement('div');
+                node.className = 'profile-city-card';
+                node.innerHTML = `
+                    <div>
+                        <div style="font-size: 1.4rem; font-weight: 600;">${item.name}</div>
+                        <div style="font-size: 0.85rem; opacity: 0.6; margin-top: 4px;">Saved Context</div>
+                    </div>
+                    <div style="font-size: 2.2rem; font-weight: 200;">${item.roundTemp || '--'}°</div>
+                `;
+                node.onclick = () => loadProfileTelemetry(item.name, item.lat, item.lon);
+                savedCitiesProfilePool.appendChild(node);
             });
         }
 
-        // High-Precision Geocoding Autocomplete Execution Array
-        citySearchField.addEventListener('input', async (eventEngine) => {
-            const operationalString = eventEngine.target.value;
-            if (operationalString.length < 2) { autocompleteResponseList.innerHTML = ''; return; }
+        // High Precision Geocoding Autocomplete Execution Array
+        citySearchField.addEventListener('input', async (e) => {
+            const query = e.target.value;
+            if (query.length < 2) { autocompleteResponseList.innerHTML = ''; return; }
 
             try {
-                const searchURI = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(operationalString)}&count=4`;
+                const searchURI = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=4`;
                 const executionFetch = await fetch(searchURI);
-                const payloadArray = await executionFetch.json();
+                const arrayPayload = await executionFetch.json();
 
                 autocompleteResponseList.innerHTML = '';
-                if (payloadArray.results) {
-                    payloadArray.results.forEach(locationNode => {
+                if (arrayPayload.results) {
+                    arrayPayload.results.forEach(loc => {
                         const parsingLi = document.createElement('li');
                         parsingLi.className = 'autocomplete-node';
-                        parsingLi.innerText = `${locationNode.name}, ${locationNode.admin1 || ''} (${locationNode.country})`;
-                        parsingLi.onclick = () => loadProfileTelemetry(locationNode.name, locationNode.latitude, locationNode.longitude);
+                        parsingLi.innerText = `${loc.name}, ${loc.admin1 || ''} (${loc.country})`;
+                        parsingLi.onclick = () => loadProfileTelemetry(loc.name, loc.latitude, loc.longitude);
                         autocompleteResponseList.appendChild(parsingLi);
                     });
                 }
-            } catch(fault) {
-                // Fail silently to safeguard integration loops
-            }
+            } catch(fault) {}
         });
 
-        // App Entry Sequence Loop
+        // --- HARDWARE COMPATIBLE PARALLAX GYRO SYSTEM ---
+        function initGyroTelemetry() {
+            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                DeviceOrientationEvent.requestPermission().then(res => {
+                    if (res === 'granted') window.addEventListener('deviceorientation', handleGyroMovement);
+                }).catch(() => {});
+            } else {
+                window.addEventListener('deviceorientation', handleGyroMovement);
+            }
+        }
+
+        function handleGyroMovement(event) {
+            let x = event.gamma; 
+            let y = event.beta - 45; 
+            x = Math.max(-10, Math.min(10, x)) / 2;
+            y = Math.max(-10, Math.min(10, y)) / 2;
+
+            document.querySelectorAll('.glass-module, .profile-city-card').forEach(el => {
+                el.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+            });
+        }
+
+        // App Initialisation Loop
         window.addEventListener('DOMContentLoaded', () => {
-            refreshProfileDatabaseUI();
-            const historicProfileState = localStorage.getItem('primary_profile_context');
-            if (historicProfileState) {
-                const { name, lat, lon } = JSON.parse(historicProfileState);
+            renderPlacesPoolUI();
+            const persistentState = localStorage.getItem('primary_offline_cache');
+            if (persistentState) {
+                const { name, lat, lon } = JSON.parse(persistentState);
                 loadProfileTelemetry(name, lat, lon);
             } else {
-                // Initialize context variables for tracking (Regina)
                 loadProfileTelemetry('Regina', 50.4501, -104.6178);
             }
         });
